@@ -1,0 +1,16 @@
+{
+  "name": "rxjs-lite",
+  "version": "0.1.0",
+  "description": "Simple event aggregator pipeline for browser front-end JavaScript when RxJs is too much",
+  "main": "index.js",
+  "repository": "https://github.com/tommed/rxjs-lite.git",
+  "author": "Tom Medhurst <tom.medhurst@gmail.com>",
+  "license": "GPL",
+  "private": false,
+  "devDependencies": {
+    "http-server": "^0.11.1"
+  },
+  "scripts": {
+    "serve": "http-server . -i"
+  }
+}

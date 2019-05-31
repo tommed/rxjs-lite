@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Test RxJs-Lite</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.5/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+    <style>
+        body {
+            transition: background-color 500ms ease-in-out;
+        }
+    </style>
+  </head>
+  <body>
+
+    <section class="section" id="test1">
+        <div class="container">
+        <h1 class="title">
+            Hello World
+        </h1>
+        <p class="subtitle">
+            My first website with:
+            <ul>
+                <li><strong id="test1Value">RxJs-Lite</strong></li>
+                <li><strong id="test2Value">RxJs-Lite</strong></li>
+            </ul>
+            <input type="button" class="button is-primary" value="Click me" onclick="$emit('action1', 'button1')"/>
+            <input type="button" class="button is-secondary" value="Click me 2" onclick="$emit('action1', 'button2')"/>
+
+            <select class="control" onchange="$emit('color-changed', event.target.value)">
+                <option value="#fff">White</option>
+                <option value="#999">Grey</option>
+                <option selected value="#f00">Red</option>
+                <option value="#0f0">Green</option>
+                <option value="#00f">Blue</option>
+            </select>
+        </p>
+        </div>
+    </section>
+
+    <script src="./lib/rxjs-lite.js"></script>
+    <script>
+        // you can subscribe to an event
+        $subscribe('action1', 'update-value')
+            // with a callback
+            .with(function (e) { 
+                console.log('received clicked (1)', e);
+                // change value and re-emit
+                const numberFromEvent = parseInt(e.match(/\d/g)[0], 10);
+                $emit('action1:as-number', numberFromEvent);
+            })
+            // or a convenience function for updating dom elements
+            .updateTextContent('#test1Value')
+            // or by filtering the value, then updating it
+            .updateTextContent('#test2Value', (e) => `Formatted ${e.toUpperCase()}`);
+
+        // you can have multiple subscribers which are run in
+        // isolated pipelines so will not affect each other
+        $subscribe('action1', 'pointless-subscriber')
+            .with(function (e) {
+                console.log('received action (2)', e);
+            });
+
+        // you can listen halfway through another pipeline
+        // and re-raise events with different names
+        $subscribe('action1:as-number', 'log-number')
+            .with(function (e) {
+                console.log('received number (3)', e);
+            })
+            .as('action1:number-games');
+        
+        // as subscriber pipelines are run in isolation
+        // you can choose to manipulate the value
+        // and it'll only apply to subsquent actions
+        $subscribe('action1:number-games', 'adjust-number')
+            .with(function(e) { 
+                document.title = `Title:${e}`; 
+            })
+            // make the number bigger
+            .map((e) => (e * 22) - 1)
+            .with(function (e) {
+                console.log('adjusted number (1)', e);
+            })
+            // now reduce it
+            .map((e) => e - 5)
+            .with(function (e) {
+                console.log('adjusted number (2)', e);
+            });
+
+        // update the css style of an element based on value
+        $subscribe('color-changed', 'set-background-color')
+            .updateStyle('body', 'background-color')
+            .setAttribute(
+                '#test1', 
+                'data-color', 
+                (e) => e.replace('#', ''))
+            .startWith('#f00');
+
+    </script>
+
+  </body>
+</html>
